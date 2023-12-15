@@ -3,6 +3,7 @@ import time
 from picamera import PiCamera
 import requests
 import numpy as np
+import matplotlib.pyplot as plt
 
 # Replace 'COM_PORT' with the appropriate port
 # arduino = serial.Serial('COM_PORT', 9600)
@@ -51,6 +52,8 @@ def find_mug():
 
     preds = response.json()
     preds = np.array(preds)
+    plt.imshow(preds)
+    plt.savefig('preds.png')
     print(preds)
 
 
