@@ -1,21 +1,47 @@
-#include <Servo.h> 
+#include <Servo.h>
 
-Servo myservo;  // create servo object to control a servo
+// set pin numbers:
+const int SERVO_X_PIN = 10;
+const int SERVO_Y_PIN = 9;
+const int TRIGGER_PIN = 11;
 
-int pos = 0;    // variable to store the servo position
+Servo servoX;  // Servo for LEFT and RIGHT
+Servo servoY;  // Servo for UP and DOWN
+
+int posX = 90; // Initial position for servoY
+int posY = 90; // Initial position for servoX
 
 void setup() {
-  myservo.attach(9);  // attaches the servo on pin 9 to the servo object
+  servoY.attach(SERVO_X_PIN); // Attach servoY to pin 9
+  servoX.attach(SERVO_Y_PIN); // Attach servoX to pin 10
+  servoY.write(posX); // Set initial position for servoY
+  servoX.write(posY); // Set initial position for servoX
+  Serial.begin(9600); // Start serial communication
+}
+
+void updateServo(Servo &servo, int &position, int change) {
+  position += change;
+  position = max(0, min(180, position)); // Constrain position between 0 and 180
+  servo.write(position);
 }
 
 void loop() {
-  for (pos = 0; pos <= 180; pos += 1) { // goes from 0 degrees to 180 degrees
-    // in steps of 1 degree
-    myservo.write(pos);              // tell servo to go to position in variable 'pos'
-    delay(15);                       // waits 15ms for the servo to reach the position
-  }
-  for (pos = 180; pos >= 0; pos -= 1) { // goes from 180 degrees to 0 degrees
-    myservo.write(pos);              // tell servo to go to position in variable 'pos'
-    delay(15);                       // waits 15ms for the servo to reach the position
+  if (Serial.available() > 0) {
+    String command = Serial.readStringUntil('\n');
+
+    if (command == "UP") {
+      updateServo(servoY, posX, -10); // Decrease position by 10
+    } else if (command == "DOWN") {
+      updateServo(servoY, posX, 10); // Increase position by 10
+    } else if (command == "LEFT") {
+      updateServo(servoX, posY, -10); // Decrease position by 10
+    } else if (command == "RIGHT") {
+      updateServo(servoX, posY, 10); // Increase position by 10
+    } else if (command.startsWith("SHOOT")) {
+      int duration = command.substring(6).toInt();
+      digitalWrite(TRIGGER_PIN, HIGH); // Assuming trigger is connected to pin TRIGGER_PIN
+      delay(duration);
+      digitalWrite(TRIGGER_PIN, LOW);
+    }
   }
 }
