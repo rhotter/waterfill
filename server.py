@@ -21,7 +21,8 @@ class SegmentationResponse:
 def detect_contours(preds):
     mask = preds > 0.1
     contours, _ = cv2.findContours(mask.astype('uint8'), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    return contours
+    contours_list = [contour.tolist() for contour in contours]
+    return contours_list
 
 @app.route('/segment', methods=['POST'])
 def segment_image():
