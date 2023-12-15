@@ -49,7 +49,7 @@ def find_mug():
     with open(image_path, 'rb') as image_file:
         files = {'image': (image_path, image_file, 'image/jpeg')}
         response = requests.post(api_url, files=files)
-
+    print("got response!")
     preds = response.json()
     preds = np.array(preds)
     plt.imshow(preds)
