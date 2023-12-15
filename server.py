@@ -13,7 +13,7 @@ image = (
 stub = Stub("waternug", image=image)
 
 
-@stub.cls(gpu="T4")
+@stub.cls(gpu="A10G")
 class Model:
     def __enter__(self):
         from transformers import CLIPSegProcessor, CLIPSegForImageSegmentation
