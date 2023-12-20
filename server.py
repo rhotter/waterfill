@@ -41,7 +41,7 @@ class Model:
         model = self.model.to(device)
         with torch.no_grad():
             outputs = model(**inputs)
-        preds = torch.sigmoid(outputs.logits).cpu().numpy()
+        preds = torch.sigmoid(outputs.logits).cpu().detach().numpy()
         return preds
 
 
@@ -65,7 +65,6 @@ def flask_app():
         preds = Model().segment.remote(image_bytes)
 
         # turn to list
-        return jsonify("works")
         preds_list = preds.tolist()
 
         return jsonify(preds_list)
