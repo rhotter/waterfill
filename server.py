@@ -29,15 +29,19 @@ class Model:
         from PIL import Image
         import torch
 
+        if torch.cuda.is_available():
+            device = torch.device("cuda")
+
         image = Image.open(BytesIO(image_bytes)).resize((350, 350))
 
         prompts = ["cup"]
         inputs = self.processor(text=prompts, images=[
-                                image] * len(prompts), padding="max_length", return_tensors="pt")
+                                image] * len(prompts), padding="max_length", return_tensors="pt").to(device)
         # Model prediction
+        model = self.model.to(device)
         with torch.no_grad():
-            outputs = self.model(**inputs)
-        preds = torch.sigmoid(outputs.logits).numpy()
+            outputs = model(**inputs)
+        preds = torch.sigmoid(outputs.logits).cpu().numpy()
         return preds
 
 
@@ -61,6 +65,7 @@ def flask_app():
         preds = Model().segment.remote(image_bytes)
 
         # turn to list
+        return jsonify("works")
         preds_list = preds.tolist()
 
         return jsonify(preds_list)
