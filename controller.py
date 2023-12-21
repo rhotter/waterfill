@@ -13,41 +13,58 @@ TRIGGER_PIN = 17
 INCREMENT = 5     # Adjust this for finer control of servo movement
 
 # Initialize servos with pigpio factory and trigger pin
-servoX = AngularServo(SERVO_X_PIN, pin_factory=factory, initial_angle=-90)
-servoY = AngularServo(SERVO_Y_PIN, pin_factory=factory, initial_angle=-90)
+servoX = AngularServo(SERVO_X_PIN, pin_factory=factory, initial_angle=0)
+servoY = AngularServo(SERVO_Y_PIN, pin_factory=factory, initial_angle=-45)
 trigger = OutputDevice(TRIGGER_PIN, pin_factory=factory)
 
-print("s3")
+posX = servoX.angle or 0
+posY = servoY.angle or 0
+
+print(posY, posX)
 
 
 def clamp(value, min_value=-90, max_value=90):
     return max(min_value, min(max_value, value))
 
 
-def main():
-    posX = servoX.angle or 0
-    posY = servoY.angle or 0
+def move_rel(x_rel, y_rel):
+    global posX, posY
+    # test
+    posY = clamp(posY + y_rel)
+    posX = clamp(posX + x_rel)
+    print(f"Moving rel {x_rel}, {y_rel} to new position {posX}, {posY}")
+    servoX.angle = posX
+    servoY.angle = posY
 
+
+def shoot(duration):
+    trigger.on()
+    sleep(duration)
+    trigger.off()
+
+
+def shoot_start():
+    trigger.on()
+
+
+def shoot_stop():
+    trigger.off()
+
+
+def main():
     while True:
         command = input("Enter command (UP/DOWN/LEFT/RIGHT/SHOOT): ")
-
         if command == "UP":
-            posY = clamp(posY - INCREMENT)
-            servoY.angle = posY
+            move_rel(0, INCREMENT)
         elif command == "DOWN":
-            posY = clamp(posY + INCREMENT)
-            servoY.angle = posY
+            move_rel(0, -INCREMENT)
         elif command == "LEFT":
-            posX = clamp(posX + INCREMENT)
-            servoX.angle = posX
+            move_rel(INCREMENT, 0)
         elif command == "RIGHT":
-            posX = clamp(posX - INCREMENT)
-            servoX.angle = posX
+            move_rel(-INCREMENT, 0)
         elif command.startswith("SHOOT"):
             duration = int(command[6:])
-            trigger.on()
-            sleep(duration)
-            trigger.off()
+            shoot(duration)
 
 
 if __name__ == "__main__":
