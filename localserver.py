@@ -22,7 +22,6 @@ async def segment(image: UploadFile = File(...),
                   threshold: float = Query(0.4)):
     if not image:
         return {'error': 'No image provided'}, 400
-
     image_bytes = await image.read()
     img = Image.open(io.BytesIO(image_bytes))
 
@@ -37,14 +36,9 @@ async def segment(image: UploadFile = File(...),
             # Normalized coordinates
             normalized_bbox = results.boxes.xyxyn[idx].tolist()
             detected_object = {
-                'name': object_name,
-                'confidence': confidence,
-                'normalized_coordinates': {
-                    'xmin': normalized_bbox[0],
-                    'ymin': normalized_bbox[1],
-                    'xmax': normalized_bbox[2],
-                    'ymax': normalized_bbox[3]
-                }
+                'label': object_name,
+                'score': confidence,
+                'box': normalized_bbox,
             }
             detected_objects.append(detected_object)
 
