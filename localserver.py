@@ -1,3 +1,5 @@
+# run it with uvicorn localserver:app --host [YOUR IP] --port 8000 --reload
+
 from PIL import Image
 from fastapi import FastAPI, File, UploadFile, Query
 from typing import List
@@ -16,7 +18,7 @@ def hi():
 
 @app.post("/segment")
 async def segment(image: UploadFile = File(...),
-                  queries: List[str] = Query(["mug", "cup"]),
+                  queries: List[str] = Query(["person", "cup"]),
                   threshold: float = Query(0.4)):
     if not image:
         return {'error': 'No image provided'}, 400
@@ -32,15 +34,16 @@ async def segment(image: UploadFile = File(...),
         confidence = results.boxes.conf[idx].item()  # Convert to Python float
 
         if object_name in queries and confidence > threshold:
-            bbox = results.boxes.xyxy[idx].tolist()  # Convert to Python list
+            # Normalized coordinates
+            normalized_bbox = results.boxes.xyxyn[idx].tolist()
             detected_object = {
                 'name': object_name,
                 'confidence': confidence,
-                'coordinates': {
-                    'xmin': bbox[0],
-                    'ymin': bbox[1],
-                    'xmax': bbox[2],
-                    'ymax': bbox[3]
+                'normalized_coordinates': {
+                    'xmin': normalized_bbox[0],
+                    'ymin': normalized_bbox[1],
+                    'xmax': normalized_bbox[2],
+                    'ymax': normalized_bbox[3]
                 }
             }
             detected_objects.append(detected_object)
