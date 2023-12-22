@@ -26,7 +26,7 @@ class Model:
             "google/owlv2-base-patch16-ensemble")
 
     @method()
-    def segment(self, image_bytes, queries):
+    def segment(self, image_bytes, queries, threshold=0.4):
         from io import BytesIO
         from PIL import Image
         import torch
@@ -50,7 +50,7 @@ class Model:
         target_sizes = torch.Tensor(
             [(model_image_size, model_image_size)]).to(device)
         results = self.processor.post_process_object_detection(
-            outputs, threshold=0.4, target_sizes=target_sizes)
+            outputs, threshold=threshold, target_sizes=target_sizes)
 
         results = results[0]
 
@@ -86,14 +86,16 @@ def flask_app():
         return "hi!"
 
     @web_app.post("/segment")
-    async def segment(image: UploadFile = File(...), queries: List[str] = Query(["a mug", "a cup"])):
+    async def segment(image: UploadFile = File(...),
+                      queries: List[str] = Query(["a mug", "a cup"]),
+                      threshold: float = Query(0.4)):
         if not image:
             return {'error': 'No image provided'}, 400
 
         image_bytes = await image.read()
 
         # Use queries from args if provided, else default to ["a cup", "a mug"]
-        results = Model().segment.remote(image_bytes, queries=queries)
+        results = Model().segment.remote(image_bytes, queries=queries, threshold=threshold)
 
         return results
 
