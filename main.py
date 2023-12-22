@@ -36,14 +36,32 @@ def snap():
 def find_mug():
     print("pinging api...")
     # URL of the Flask API
+    # api_url = 'https://rhotter--waternug-flask-app.modal.run/segment'
+    api_url = 'http://192.168.0.209:8000/segment'
+
+    # Open the image and send it in a POST request
+    with open(image_path, 'rb') as image_file:
+        files = {'image': (image_path, image_file, 'image/jpeg')}
+        params = {'queries': ["cup"], 'threshold': 0.1}
+        response = requests.post(api_url, files=files, params=params)
+    print("got response!")
+    res = response.json()
+    return res
+
+
+def find_person():
+    print("pinging api...")
+    # URL of the Flask API
     api_url = 'https://rhotter--waternug-flask-app.modal.run/segment'
 
     # Open the image and send it in a POST request
     with open(image_path, 'rb') as image_file:
         files = {'image': (image_path, image_file, 'image/jpeg')}
-        response = requests.post(api_url, files=files)
+        params = {'queries': ["a person", "face"], 'threshold': 0.1}
+        response = requests.post(api_url, files=files, params=params)
     print("got response!")
     res = response.json()
+    print(res)
     return res
 
 
@@ -56,6 +74,7 @@ def do_feedback():
         bottom_y = max(y1, y2)
         top_y = min(y1, y2)
         cy = 0.75 * top_y + 0.25 * bottom_y
+        # cy = 0.25 * top_y + 0.75 * bottom_y
 
         print(f"found cup at {cx}, {cy}")
     except:
